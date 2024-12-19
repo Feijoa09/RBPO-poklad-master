@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: poklad
+  datasource:
+    url: jdbc:postgresql://localhost:5432/data
+    username: ${JDBC_USERNAME}
+    password: ${JDBC_PASSWORD}
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+  thymeleaf:
+    check-template-location: false
+jwt:
+  secret: ${SECRET_JAVA}
+  expiration: 3600000

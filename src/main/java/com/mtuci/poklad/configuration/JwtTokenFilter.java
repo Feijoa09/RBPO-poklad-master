@@ -1,7 +1,8 @@
 package com.mtuci.poklad.configuration;
 
 import com.mtuci.poklad.models.UserSession;
-import com.mtuci.poklad.service.UserSessionService;
+import com.mtuci.poklad.service.TokenService;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +21,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
-    private final UserSessionService userSessionService;
+    private final TokenService tokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

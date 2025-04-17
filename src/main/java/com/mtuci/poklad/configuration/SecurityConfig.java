@@ -1,6 +1,6 @@
 package com.mtuci.poklad.configuration;
 
-import com.mtuci.poklad.service.UserSessionService;
+import com.mtuci.poklad.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,11 +23,11 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
-    private final UserSessionService userSessionService;  // Добавляем зависимость на UserSessionService
+    private final TokenService tokenService;
 
     @Bean
     public JwtTokenFilter jwtTokenFilter() {
-        return new JwtTokenFilter(jwtTokenProvider, userDetailsService, userSessionService); // Передаем UserSessionService в фильтр
+        return new JwtTokenFilter(jwtTokenProvider, userDetailsService, tokenService); // Передаем UserSessionService в фильтр
     }
 
     @Bean
@@ -38,7 +38,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Безопасная работа без сессий
                 .authorizeHttpRequests(authz ->
                         authz
-                                .requestMatchers("/authentication/signin", "/user/signup").permitAll() // Публичные эндпоинты
+                                .requestMatchers("/authentication/signin", "/user/signup", "/authentication/refresh").permitAll() // Публичные эндпоинты
                                 .anyRequest().authenticated() // Все остальные запросы должны быть авторизованы
                 )
                 .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class); // Добавляем JWT фильтр

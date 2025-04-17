@@ -20,6 +20,6 @@ server:
   ssl:
     enabled: true
     key-store-type: JKS
-    key-store: classpath:keystore/server.jks
-    key-store-password: ${SECRET_KEYSTORE}
+    key-store: classpath:keys/server.jks
+    key-store-password: ${SECRET_KEYS}
     key-alias: server

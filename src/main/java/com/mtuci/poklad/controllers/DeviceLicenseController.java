@@ -35,12 +35,12 @@ public class DeviceLicenseController {
                                   @RequestParam("licenseId") Long licenseId,
                                   @RequestParam("activationDate") String activationDate) {
         try {
-            Date date = Date.valueOf(activationDate); // Преобразуем строку в дату
+            Date date = Date.valueOf(activationDate);
 
-            // Создаём и сохраняем связь устройства и лицензии
+
             DeviceLicense deviceLicense = deviceLicenseService.save(id, deviceId, licenseId, date);
 
-            // Возвращаем ответ с данными созданной связи
+
             return ResponseEntity.status(HttpStatus.CREATED).body(deviceLicense); // Статус 201 для успешного создания
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Некорректный формат даты. Используйте формат YYYY-MM-DD: " + e.getMessage());
@@ -64,7 +64,7 @@ public class DeviceLicenseController {
                                     @RequestParam("licenseId") Long licenseId,
                                     @RequestParam("activationDate") String activationDate) {
         try {
-            Date date = Date.valueOf(activationDate); // Преобразование строки в дату
+            Date date = Date.valueOf(activationDate);
 
             // Обновляем связь через сервис
             DeviceLicense updatedDeviceLicense = deviceLicenseService.update(id, deviceId, licenseId, date);
@@ -112,7 +112,7 @@ public class DeviceLicenseController {
                     ))
                     .collect(Collectors.toList());
 
-            // Возвращаем успешный ответ со списком связей
+
             return ResponseEntity.ok(dataDevices); // Статус 200 для успешного запроса
         } catch (Exception e) {
             return handleError("Ошибка при получении списка связей устройства и лицензии", e);

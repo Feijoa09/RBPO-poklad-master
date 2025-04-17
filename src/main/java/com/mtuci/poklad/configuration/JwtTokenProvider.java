@@ -58,16 +58,13 @@ public class JwtTokenProvider {
         return claimsResolver.apply(extractAllClaims(token));
     }
 
-    // Метод для создания AccessToken
-    public String createAccessToken(String username, Set<GrantedAuthority> authorities) {
+
+    public String createAccessToken(String username) {
         Claims claims = Jwts.claims().setSubject(username);
-        claims.put("auth", authorities.stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList()));
-        claims.put("token_type", "access"); // Указываем тип токена как "access"
+        claims.put("token_type", "access");
 
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + expiration); // Используем стандартный срок действия
+        Date expiryDate = new Date(now.getTime() + expiration);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -77,7 +74,8 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    // Метод для создания RefreshToken
+
+
     public String createRefreshToken(String username, String deviceId) {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("token_type", "refresh"); // Указываем тип токена как "refresh"
@@ -123,6 +121,14 @@ public class JwtTokenProvider {
         } catch (Exception ex) {
             return false;
         }
+    }
+    public Date getExpirationFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(signingKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
     }
 
     public String getUsername(String token) {

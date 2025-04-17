@@ -37,18 +37,18 @@ public class ActivationController {
                                              @RequestParam String macAddress,
                                              @RequestParam String activationCode) {
         try {
-            // Извлечь токен и получить логин пользователя
+
             String token = extractToken(authHeader);
             String login = jwtTokenProvider.getUsername(token);
 
-            // Получить пользователя из сервиса
+
             ApplicationUser user = userService.getUserByLogin(login)
                     .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
-            // Зарегистрировать или обновить устройство
+
             Device device = deviceService.registerOrUpdateDevice(name, macAddress, user);
 
-            // Активировать лицензию
+
             Ticket ticket = licenseService.activateLicense(activationCode, device, user);
 
             return ResponseEntity.ok(ticket);

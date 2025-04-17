@@ -1,5 +1,6 @@
 package com.mtuci.poklad.configuration;
 
+import com.mtuci.poklad.service.UserSessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +14,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -23,19 +23,20 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
+    private final UserSessionService userSessionService;  // Добавляем зависимость на UserSessionService
 
     @Bean
     public JwtTokenFilter jwtTokenFilter() {
-        return new JwtTokenFilter(jwtTokenProvider, userDetailsService);
+        return new JwtTokenFilter(jwtTokenProvider, userDetailsService, userSessionService); // Передаем UserSessionService в фильтр
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> 
+                .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Безопасная работа без сессий
-                .authorizeHttpRequests(authz -> 
+                .authorizeHttpRequests(authz ->
                         authz
                                 .requestMatchers("/authentication/signin", "/user/signup").permitAll() // Публичные эндпоинты
                                 .anyRequest().authenticated() // Все остальные запросы должны быть авторизованы

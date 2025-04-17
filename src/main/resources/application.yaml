@@ -2,7 +2,7 @@ spring:
   application:
     name: poklad
   datasource:
-    url: jdbc:postgresql://localhost:5432/data
+    url: jdbc:postgresql://localhost:5432/data2
     username: ${JDBC_USERNAME}
     password: ${JDBC_PASSWORD}
   jpa:
@@ -16,3 +16,10 @@ spring:
 jwt:
   secret: ${SECRET_JAVA}
   expiration: 3600000
+server:
+  ssl:
+    enabled: true
+    key-store-type: JKS
+    key-store: classpath:keystore/server.jks
+    key-store-password: ${SECRET_KEYSTORE}
+    key-alias: server

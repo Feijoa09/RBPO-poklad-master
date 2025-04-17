@@ -24,8 +24,8 @@ public class LicenseType {
     /**
      * Уникальный идентификатор типа лицензии.
      */
-    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
     private Long id;
 
     /**

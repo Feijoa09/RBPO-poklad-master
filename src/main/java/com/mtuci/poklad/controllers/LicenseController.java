@@ -70,7 +70,7 @@ public class LicenseController {
                             license.getOwner().getId(),
                             license.getFirstActivationDate(),
                             license.getEndingDate(),
-                            license.isBlocked(),
+                            license.getIsBlocked(),
                             license.getDeviceCount(),
                             license.getDuration(),
                             license.getCode(),

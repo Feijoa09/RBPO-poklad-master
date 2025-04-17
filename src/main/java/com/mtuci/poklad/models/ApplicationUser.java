@@ -21,8 +21,8 @@ public class ApplicationUser {
     /**
      * Уникальный идентификатор пользователя.
      */
-    @Id
     @GeneratedValue
+    @Id
     private Long id;
 
     /**

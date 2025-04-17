@@ -28,6 +28,11 @@ public class DeviceLicenseServiceImpl implements DeviceLicenseService {
     }
 
     @Override
+    public DeviceLicense saveDeviceLicense(DeviceLicense deviceLicense) {
+        return deviceLicenseRepository.save(deviceLicense);
+    }
+
+    @Override
     public DeviceLicense save(Long id, Long deviceId, Long licenseId, Date activationDate) {
         // Найти устройство
         Device device = deviceRepository.findById(deviceId)

@@ -14,16 +14,8 @@ public interface LicenseService {
             Long productId,
             Long ownerId,
             Long licenseTypeId,
-            Integer deviceCount,
-            Long duration,
-            String firstActivationDate,
-            String endingDate,
-            boolean isBlocked,
-            String code,
-            String description
+            Integer deviceCount
     );
-
-
 
     Ticket activateLicense(String activationCode, Device device, ApplicationUser user);
     Ticket generateTicket(License license, Device device, String description);
@@ -46,4 +38,6 @@ public interface LicenseService {
 
     // удаление
     void delete(Long id);
+
+    void createDeviceLicense(License license, Device device);
 }

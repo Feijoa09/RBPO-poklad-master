@@ -36,11 +36,11 @@ public class DeviceLicense {
     /**
      * Устройство, на котором активирована лицензия.
      */
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "device_id", nullable = false)
     private Device device;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "license_id", nullable = false)
     private License license;
 

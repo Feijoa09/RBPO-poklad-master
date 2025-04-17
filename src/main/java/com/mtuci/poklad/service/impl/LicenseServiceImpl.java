@@ -2,9 +2,6 @@ package com.mtuci.poklad.service.impl;
 
 import com.mtuci.poklad.models.*;
 import com.mtuci.poklad.repositories.LicenseRepository;
-import com.mtuci.poklad.repositories.LicenseTypeRepository;
-import com.mtuci.poklad.repositories.ProductRepository;
-import com.mtuci.poklad.repositories.UserRepository;
 import com.mtuci.poklad.requests.DataLicenseRequest;
 import com.mtuci.poklad.service.LicenseService;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +24,7 @@ public class LicenseServiceImpl implements LicenseService {
     private final DeviceLicenseServiceImpl deviceLicenseService;
 
     @Override
-    public License createLicense(Long productId, Long ownerId, Long licenseTypeId, Integer deviceCount,
-                                 Long duration, String firstActivationDate, String endingDate,
-                                 boolean isBlocked, String code, String description) {
+    public License createLicense(Long productId, Long ownerId, Long licenseTypeId, Integer deviceCount) {
         // Получаем зависимости через сервисы
         LicenseType licenseType = licenseTypeService.getLicenseTypeById(licenseTypeId)
                 .orElseThrow(() -> new RuntimeException("Тип лицензии не найден"));
@@ -38,25 +33,31 @@ public class LicenseServiceImpl implements LicenseService {
         ApplicationUser owner = userService.getUserById(ownerId)
                 .orElseThrow(() -> new RuntimeException("Владелец не найден"));
 
-        // Преобразуем строки в объекты типа Date
-        Date firstActivation = Date.valueOf(firstActivationDate);
-        Date ending = Date.valueOf(endingDate);
-
         // Создаем новый объект License
         License license = new License();
         license.setProduct(product); // Используем объект product
         license.setOwner(owner);     // Используем объект owner
         license.setLicenseType(licenseType); // Используем объект licenseType
         license.setDeviceCount(deviceCount);
-        license.setDuration(duration);
-        license.setFirstActivationDate(firstActivation);
-        license.setEndingDate(ending);
-        license.setBlocked(isBlocked);
-        license.setCode(code);
-        license.setDescription(description);
+        license.setDuration(licenseType.getDefaultDuration());
+        license.setIsBlocked(product.isBlocked());
+        license.setDescription(String.format(
+                "Лицензия на продукт %s\n"+
+                "Тип лицензии: %s\n"+
+                "Лимит по устройствам: %d\n"+
+                "Время действия: %d\n"+
+                "Состояние: Не активирована",
+                product.getName(), licenseType.getName(),
+                deviceCount, license.getDuration()));
+        license.setCode(generateCodeLicense(productId, ownerId, licenseTypeId, deviceCount));
+        license.setEndingDate(new Date(System.currentTimeMillis()+license.getDuration()*1000));
 
         // Сохраняем лицензию в базе данных
-        return licenseRepository.save(license);
+        license = licenseRepository.save(license);
+
+        licenseHistoryService.recordLicenseChange(license, owner, LicenseHistoryStatus.CREATE.name(), "Лицензия создана");
+
+        return license;
     }
 
     @Override
@@ -73,35 +74,56 @@ public class LicenseServiceImpl implements LicenseService {
             license.setUser(user);
         updateLicense(license);
 
+        createDeviceLicense(license, device);
+
         licenseHistoryService.recordLicenseChange(license, user, LicenseHistoryStatus.ACTIVATE.name(), "Лицензия успешно активирована");
         return generateTicket(license, device, "Лицензия активирована");
     }
 
     @Override
+    public void createDeviceLicense(License license, Device device) {
+        DeviceLicense deviceLicense = new DeviceLicense();
+        deviceLicense.setDevice(device);
+        deviceLicense.setLicense(license);
+        deviceLicense.setActivationDate(license.getFirstActivationDate());
+        deviceLicenseService.saveDeviceLicense(deviceLicense);
+    }
+
+    @Override
     public boolean validateLicense(License license, Device device, ApplicationUser user) {
         // проверка условий активации лицензии
-        return !license.isBlocked() &&
+        return !license.getIsBlocked() &&
                 (license.getUser() == null || license.getUser().getId().equals(user.getId())) &&
+                license.getDeviceLicenses().size() < license.getDeviceCount() &&
                 license.getDeviceLicenses().stream().noneMatch(deviceLicense ->
                         deviceLicense.getDevice().getId().equals(device.getId()) &&
-                                deviceLicense.getLicense().getId().equals(license.getId())) &&
-                license.getDeviceLicenses().size() < license.getDeviceCount() &&
-                new Date(System.currentTimeMillis()).before(license.getEndingDate());
+                                deviceLicense.getLicense().getId().equals(license.getId()));
+
     }
 
     @Override
     public void updateLicense(License license) {
-        if (license.getFirstActivationDate() == null)
+        if (license.getFirstActivationDate() == null) {
             license.setFirstActivationDate(new Date(System.currentTimeMillis()));
+        }
 
         Format formatter = new SimpleDateFormat("dd.MM.yyyy");
-        license.setDescription(license.getDescription() + String.format("Пользователь: %s\n" +
-                                "Впервые активирована: %s\nАктивированных устройств: %d",
-                        license.getUser().getLogin(),
-                        formatter.format(license.getFirstActivationDate()),
-                        license.getDeviceLicenses().size() + 1
-                )
+        String description = String.format(
+                "Лицензия на продукт %s\n"+
+                        "Тип лицензии: %s\n"+
+                        "Лимит по устройствам: %d\n"+
+                        "Время действия: %d\n"+
+                        "Состояние: Активирована\n"+
+                        "Пользователь: %s\n"+
+                        "Впервые активирована: %s\n"+
+                        "Активированных устройств: %d\n"+
+                        "Дата окончания лицензии: %s\n",
+                license.getProduct().getName(), license.getLicenseType().getName(),
+                license.getDeviceCount(), license.getDuration(),
+                license.getUser().getLogin(), formatter.format(license.getFirstActivationDate()),
+                license.getDeviceLicenses().size() + 1, formatter.format(license.getEndingDate())
         );
+        license.setDescription(description);
 
         license = licenseRepository.save(license);
         licenseHistoryService.recordLicenseChange(license, license.getUser(), LicenseHistoryStatus.MODIFICATION.name(), license.getDescription());
@@ -114,7 +136,7 @@ public class LicenseServiceImpl implements LicenseService {
                 .map(DeviceLicense::getLicense)
                 .filter(license ->
                         license.getUser().getId().equals(user.getId()) &&
-                                !license.isBlocked() &&
+                                !license.getIsBlocked() &&
                                 license.getEndingDate().after(new Date(System.currentTimeMillis()))
                 ).toList();
     }
@@ -134,7 +156,7 @@ public class LicenseServiceImpl implements LicenseService {
         ));
         license.setFirstActivationDate(request.getFirstActivationDate());
         license.setEndingDate(request.getEndingDate());
-        license.setBlocked(request.isBlocked());
+        license.setIsBlocked(request.isBlocked());
         license.setDeviceCount(request.getDeviceCount());
         license.setDuration(request.getDuration());
         license.setDescription(request.getDescription());
@@ -178,7 +200,7 @@ public class LicenseServiceImpl implements LicenseService {
         ticket.setDeviceID(device.getId());
 
         // устанавливаем значение блокировки лицензии
-        ticket.setBlockedLicense(license.isBlocked()); // используем isBlockedLicense
+        ticket.setBlockedLicense(license.getIsBlocked()); // используем isBlockedLicense
 
         ticket.setDescription(description);
 
@@ -206,18 +228,14 @@ public class LicenseServiceImpl implements LicenseService {
 
         // проверка возможности продления
         if (
-                license.isBlocked() ||
-                        license.getEndingDate().before(new Date(System.currentTimeMillis())) ||
-                        (license.getUser() != null && !license.getUser().getId().equals(user.getId()))
+                license.getIsBlocked() || license.getFirstActivationDate() == null ||
+                license.getEndingDate().before(new Date(System.currentTimeMillis())) ||
+                (license.getUser() != null && !license.getUser().getId().equals(user.getId()))
         ) {
-            tickets.forEach(ticket -> {
-                ticket.setDescription("Невозможно продлить лицензию");
-                licenseHistoryService.recordLicenseChange(license, user, LicenseHistoryStatus.ERROR.name(), ticket.getDescription());
-            });
-            return tickets;
+            throw new RuntimeException("Невозможно продлить лицензию");
         }
 
-        // продление на год
+        // продление по умолчанию
         license.setDuration(license.getLicenseType().getDefaultDuration());
         license.setEndingDate(new Date(System.currentTimeMillis() + license.getDuration() * 1000));
 

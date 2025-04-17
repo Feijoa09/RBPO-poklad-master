@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface DeviceLicenseService {
 
+    DeviceLicense saveDeviceLicense(DeviceLicense deviceLicense);
+
     // получение всех
     List<DeviceLicense> getAll();
 

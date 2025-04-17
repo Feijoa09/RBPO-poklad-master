@@ -21,8 +21,8 @@ public class License {
     /**
      * Уникальный идентификатор лицензии.
      */
+    @GeneratedValue
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
@@ -38,7 +38,7 @@ public class License {
     /**
      * Статус блокировки лицензии.
      */
-    private boolean isBlocked;
+    private Boolean isBlocked;
 
     /**
      * Количество устройств, на которые можно установить лицензию.
@@ -71,7 +71,7 @@ public class License {
     /**
      * Продукт, для которого выдана лицензия.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id")
     private Product product;
 

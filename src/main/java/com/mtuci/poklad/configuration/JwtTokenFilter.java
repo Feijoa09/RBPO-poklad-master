@@ -1,5 +1,7 @@
 package com.mtuci.poklad.configuration;
 
+import com.mtuci.poklad.models.UserSession;
+import com.mtuci.poklad.service.UserSessionService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,12 +13,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Date;
 
 @RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
+    private final UserSessionService userSessionService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -25,7 +29,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         String token = getTokenFromRequest(request);
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
-            authenticateUser(token);
+            String tokenType = jwtTokenProvider.getTokenType(token);
+
+            // Если это access токен, устанавливаем аутентификацию
+            if ("access".equals(tokenType)) {
+                authenticateUser(token);
+            }
+
         }
 
         filterChain.doFilter(request, response);

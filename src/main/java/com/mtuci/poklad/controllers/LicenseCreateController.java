@@ -23,15 +23,8 @@ public class LicenseCreateController {
      *
      * @param typeId              ID типа лицензии
      * @param productId           ID продукта
-     * @param userId              ID пользователя
      * @param ownerId             ID владельца
-     * @param firstActivationDate Дата активации
-     * @param endingDate          Дата окончания
-     * @param blocked             Статус блокировки
      * @param deviceCount         Количество устройств
-     * @param duration            Продолжительность лицензии
-     * @param code                Код лицензии
-     * @param description         Описание лицензии
      * @return Ответ с созданной лицензией или ошибкой
      */
     @PostMapping
@@ -39,15 +32,8 @@ public class LicenseCreateController {
     public ResponseEntity<?> createLicense(
             @RequestParam("type_id") Long typeId,
             @RequestParam("product_id") Long productId,
-            @RequestParam("user_id") Long userId,
             @RequestParam("owner_id") Long ownerId,
-            @RequestParam("first_activation_date") String firstActivationDate,
-            @RequestParam("ending_date") String endingDate,
-            @RequestParam("blocked") boolean blocked,
-            @RequestParam("device_count") Integer deviceCount,
-            @RequestParam("duration") Long duration,
-            @RequestParam("code") String code,
-            @RequestParam("description") String description) {
+            @RequestParam("device_count") Integer deviceCount) {
 
         try {
             // Вызов метода для создания лицензии
@@ -55,13 +41,7 @@ public class LicenseCreateController {
                     productId,
                     ownerId,
                     typeId,
-                    deviceCount,
-                    duration,
-                    firstActivationDate,
-                    endingDate,
-                    blocked,
-                    code,
-                    description
+                    deviceCount
             );
 
             // Формируем ответ с данными лицензии
@@ -73,7 +53,7 @@ public class LicenseCreateController {
                     license.getOwner().getId(),
                     license.getFirstActivationDate(),
                     license.getEndingDate(),
-                    license.isBlocked(),
+                    license.getIsBlocked(),
                     license.getDeviceCount(),
                     license.getDuration(),
                     license.getCode(),

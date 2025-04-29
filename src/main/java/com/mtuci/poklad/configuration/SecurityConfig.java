@@ -35,12 +35,13 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Безопасная работа без сессий
-                .authorizeHttpRequests(authz ->
-                        authz
-                                .requestMatchers("/authentication/signin", "/user/signup", "/authentication/refresh").permitAll() // Публичные эндпоинты
-                                .anyRequest().authenticated() // Все остальные запросы должны быть авторизованы
-                )
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers("/authentication/signin").permitAll()
+                        .requestMatchers("/user/signup").permitAll()
+                        .requestMatchers("/authentication/refresh").permitAll()
+                        .anyRequest().authenticated()
+                )   // Безопасная работа без сессий
                 .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class); // Добавляем JWT фильтр
 
         return http.build();

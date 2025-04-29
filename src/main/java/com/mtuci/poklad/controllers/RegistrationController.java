@@ -46,4 +46,6 @@ public class RegistrationController {
             return ResponseEntity.status(500).body("Ошибка при регистрации: " + e.getMessage());
         }
     }
+    @GetMapping
+    public void test() {}
 }

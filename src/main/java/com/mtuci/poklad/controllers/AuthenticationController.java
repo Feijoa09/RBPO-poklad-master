@@ -26,6 +26,7 @@ public class AuthenticationController {
     private final TokenService tokenService;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
+
     /**
      * Метод для аутентификации пользователя и создания пары токенов (accessToken и refreshToken).
      *
@@ -33,36 +34,36 @@ public class AuthenticationController {
      * @param device_id device_id пользователя
      * @return Ответ с токенами и логином пользователя, если аутентификация успешна
      */
+
     @PostMapping("/signin")
     public ResponseEntity<?> login(
             @RequestParam String login,
+            @RequestParam String password,
             @RequestParam String device_id) {
-
+        System.out.println("login exist");
         try {
+            // Аутентификация по логину и паролю
+            Authentication auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(login, password)
+            );
 
-            Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(login, device_id));
-
-
+            // Поиск пользователя
             ApplicationUser user = userRepository.findByLogin(login)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-
+            // Создание токенов
             TokensUser tokensUser = tokenService.createSession(login, device_id);
 
-
-
-            // Возвращаем пару токенов
             return ResponseEntity.ok(tokensUser);
 
         } catch (ObjectOptimisticLockingFailureException e) {
-            // Обрабатываем исключение оптимистичной блокировки
             return ResponseEntity.status(HttpStatus.LOCKED)
                     .body("Оптимистичная блокировка обнаружена! Пожалуйста, попробуйте позже.");
         } catch (Exception e) {
-            // Обрабатываем другие ошибки аутентификации
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid login or password");
         }
     }
+
 
     /**
      * Метод для обновления токенов с использованием refreshToken.

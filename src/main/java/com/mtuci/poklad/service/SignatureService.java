@@ -1,6 +1,7 @@
 package com.mtuci.poklad.service;
 
 import com.mtuci.poklad.models.Signature;
+import com.mtuci.poklad.models.SignatureAudit;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,7 +26,8 @@ public interface SignatureService {
                            String signatureData,
                            String fileType,
                            Integer offsetStart,
-                           Integer offsetEnd);
+                           Integer offsetEnd,
+                           Long user_id);
 
     // Обновить существующую сигнатуру
     Signature updateSignature(UUID id,
@@ -33,15 +35,16 @@ public interface SignatureService {
                               String signatureData,
                               String fileType,
                               Integer offsetStart,
-                              Integer offsetEnd);
+                              Integer offsetEnd,
+                              Long user_id);
 
     // Удалить (пометить как DELETED) сигнатуру
-    void deleteSignature(UUID id);
+    void deleteSignature(UUID id, Long user_id);
 
     // Проверка цифровой подписи
     boolean verifySignature(Signature signature);
 
-    // Генерация цифровой подписи (используется внутри, но ты явно вызываешь её в реализации, поэтому она может быть в интерфейсе)
+    // Генерация цифровой подписи
     String generateDigitalSignature(String threatName,
                                     String firstBytesString,
                                     String remainderHash,
@@ -49,4 +52,7 @@ public interface SignatureService {
                                     String fileType,
                                     int offsetStart,
                                     int offsetEnd);
+
+    // Вернуть список аудиитов по ID сигнатур
+    List<SignatureAudit> getSignatureAudits(List<UUID> signatureIds);
 }

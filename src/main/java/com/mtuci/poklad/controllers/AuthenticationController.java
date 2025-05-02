@@ -1,5 +1,6 @@
 package com.mtuci.poklad.controllers;
 
+import com.mtuci.poklad.models.ApplicationUser;
 import com.mtuci.poklad.models.TokensUser;
 import com.mtuci.poklad.repositories.UserRepository;
 import com.mtuci.poklad.service.TokenService;
@@ -8,13 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.web.bind.annotation.*;
-import com.mtuci.poklad.models.ApplicationUser;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,7 +39,6 @@ public class AuthenticationController {
             @RequestParam String login,
             @RequestParam String password,
             @RequestParam String device_id) {
-        System.out.println("login exist");
         try {
             // Аутентификация по логину и паролю
             Authentication auth = authenticationManager.authenticate(

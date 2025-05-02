@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface SignatureAuditRepository extends JpaRepository<SignatureAudit, Long> {
+public interface SignatureAuditRepository extends JpaRepository<SignatureAudit, UUID> {
 
     /**
      * Найти все записи аудита по списку GUID.

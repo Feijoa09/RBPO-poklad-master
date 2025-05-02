@@ -24,8 +24,8 @@ server:
     key-store-password: ${SECRET_KEYS}
     key-alias: server
 signature:
-  public_key_signature: ${PUBLIC_KEY_SIGNATURE}
-  private_key_signature: ${PRIVATE_KEY_SIGNATURE}
+  resource: classpath:keys/signature.jks
+  password: ${SIGNATURE_KEY}
 
 
 

@@ -11,9 +11,6 @@ import java.util.UUID;
 @Repository
 public interface SignatureRepository extends JpaRepository<Signature, UUID> {
     List<Signature> findAllByStatus(String status);
-    List<Signature> findAllByUpdatedAtAfterAndStatus(LocalDateTime since, String status);
     List<Signature> findAllByIdInAndStatus(List<UUID> ids, String status);
     List<Signature> findByUpdatedAtAfter(LocalDateTime time);
-
-
 }
